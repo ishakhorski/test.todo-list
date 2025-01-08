@@ -12,20 +12,24 @@ const props = withDefaults(
 )
 
 const emit = defineEmits<{
-  (event: 'update', task: TaskItem): void
+  (event: 'update', task: TaskItem): void,
+  (event: 'delete', task: TaskItem): void,
 }>();
 
-const updateCompleted = (completed: boolean | null) => {
+const onUpdateCompleted = (completed: boolean | null) => {
   emit('update', {
     ...props.item,
     completed: Boolean(completed),
   });
 };
+
+const onDeleteTask = () => {
+  emit('delete', props.item);
+};
 </script>
 
 <template>
   <v-card
-    density="compact"
     :loading="props.disabled"
     class="task-item"
     :class="{ 'task-item--completed': props.item.completed }"
@@ -38,8 +42,23 @@ const updateCompleted = (completed: boolean | null) => {
         :model-value="props.item.completed"
         :disabled="props.disabled"
         hide-details
-        @update:model-value="updateCompleted"
+        @update:model-value="onUpdateCompleted"
       />
+      <v-menu>
+        <template #activator="{ props }">
+          <v-btn
+            icon="mdi-dots-vertical"
+            variant="text"
+            v-bind="props"
+          />
+        </template>
+
+        <v-list>
+          <v-list-item @click="onDeleteTask">
+            <v-list-item-title>Delete</v-list-item-title>
+          </v-list-item>
+        </v-list>
+      </v-menu>
     </v-card-actions>
   </v-card>
 </template>

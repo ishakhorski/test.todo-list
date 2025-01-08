@@ -31,6 +31,7 @@ const props = withDefaults(
 
 <style lan="scss">
 .tasks-list {
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 1rem;

@@ -17,13 +17,13 @@ export const getTasks = async (
 };
 
 export const createTask = async (task: Omit<TaskItem, 'id'>) => {
-    return post<TaskItem>('/todos/add', task);
+    return post<TaskItem>('/todos/add', { ...task, userId: 1 });
 };
 
 export const updateTask = async (task: TaskItem) => {
-    return put<TaskItem>(`/todos/${task.id}`, task);
+    return put<TaskItem>(`/todos/${task.id}`, { completed: task.completed });
 };
 
-export const deleteTask = async (id: string) => {
-    return del<void>(`/todos/${id}`);
+export const deleteTask = async (taskId: TaskItem['id']) => {
+    return del<void>(`/todos/${taskId}`);
 };

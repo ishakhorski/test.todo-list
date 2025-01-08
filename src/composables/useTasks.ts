@@ -1,6 +1,6 @@
 import { reactive, computed } from 'vue'
 
-import { getTasks, updateTask } from '@/repositories/tasks.repository'
+import { getTasks, createTask, updateTask, deleteTask } from '@/repositories/tasks.repository'
 
 import type { TaskItems, TaskItem } from '@/types/task-item'
 
@@ -21,7 +21,7 @@ const useTasks = () => {
     const tasksTotal = computed(() => state.tasksTotal)
     const tasksLoading = computed(() => state.loading)
 
-    const handleGetTasks = async (page: number, limit: number): Promise<TaskItems> => {
+    const handleGetTasks = async (page: number, limit: number) => {
         try {
             state.loading = true
             const { todos, total } = await getTasks(page, limit)
@@ -31,12 +31,25 @@ const useTasks = () => {
             return todos
         } catch (error) {
             console.error(error)
+            throw error
         } finally {
             state.loading = false
         }
     }
 
-    const handleUpdateTask = async (task: TaskItem): Promise<TaskItem> => {
+    const handleCreateTask = async (task: Omit<TaskItem, 'id'>): Promise<TaskItem> => {
+        try {
+            const newTask = await createTask(task)
+            state.tasks = [newTask, ...(state.tasks.slice(0, state.tasks.length - 1))]
+
+            return newTask
+        } catch (error) {
+            console.error(error)
+            throw error
+        }
+    }
+
+    const handleUpdateTaskCompleted = async (task: TaskItem) => {
         try {
             const updatedTask = await updateTask(task)
             state.tasks = state.tasks.map((task) => task.id === updatedTask.id ? updatedTask : task)
@@ -44,10 +57,29 @@ const useTasks = () => {
             return updatedTask
         } catch (error) {
             console.error(error)
+            throw error
         }
     }
 
-    return { tasks, tasksTotal, tasksLoading, handleGetTasks, handleUpdateTask }
+    const handleDeleteTask = async (task: TaskItem): Promise<void> => {
+        try {
+            await deleteTask(task.id)
+            state.tasks = state.tasks.filter((t) => t.id !== task.id)
+        } catch (error) {
+            console.error(error)
+            throw error
+        }
+    }
+
+    return {
+        tasks,
+        tasksTotal,
+        tasksLoading,
+        handleGetTasks,
+        handleCreateTask,
+        handleUpdateTaskCompleted,
+        handleDeleteTask
+    }
 }
 
 export default useTasks
